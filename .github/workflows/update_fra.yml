@@ -2,12 +2,13 @@ name: Update FRA daily
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '0 6 * * *'  # codziennie o 6:00 UTC
   workflow_dispatch:
 
 jobs:
   update-fra:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -21,20 +22,26 @@ jobs:
         run: |
           pip install selenium
 
-      - name: Install Chrome + chromedriver
+      - name: Install Chromium & ChromeDriver
         run: |
           sudo apt update
           sudo apt install -y chromium-browser chromium-chromedriver
+          sudo ln -sf /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
 
       - name: Run scraper
-        env:
-          PATH: /usr/bin:$PATH
-        run: python fra_scraper.py
+        run: python fra_scraper_debug.py
 
-      - name: Commit and push
+      - name: Commit and push fra.json
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
           git add fra.json
-          git commit -m "Auto update FRA" || echo "No changes"
+          git commit -m "Auto update FRA" || echo "Brak zmian"
           git push
+
+      - name: Upload screenshots (debug)
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: fra-debug-screens
+          path: debug_*.png
