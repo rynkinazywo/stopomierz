@@ -26,9 +26,15 @@ try:
     for label, url in fra_urls.items():
         driver.get(url)
         time.sleep(5)
+
+        iframe = driver.find_element(By.ID, "kurzyIframe")
+        driver.switch_to.frame(iframe)
+
         elem = driver.find_element(By.CSS_SELECTOR, '.dce-rate-value')
         value = elem.text.strip().replace(',', '.')
         fra_data[label] = value
+
+        driver.switch_to.default_content()
 
     data = {
         "data": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
