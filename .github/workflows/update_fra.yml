@@ -38,10 +38,3 @@ jobs:
           git add fra.json
           git commit -m "Auto update FRA" || echo "Brak zmian"
           git push
-
-      - name: Upload screenshots (debug)
-        if: always()
-        uses: actions/upload-artifact@v2   # ← ZAMIANA TUTAJ!
-        with:
-          name: fra-debug-screens
-          path: debug_*.png
