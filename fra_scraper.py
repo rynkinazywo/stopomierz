@@ -27,13 +27,16 @@ try:
         driver.get(url)
         time.sleep(5)
 
-        iframe = driver.find_element(By.ID, "kurzyIframe")
+        # ZNAJDŹ i przełącz się do iframe
+        iframe = driver.find_element(By.CSS_SELECTOR, 'iframe')
         driver.switch_to.frame(iframe)
 
+        # ZNAJDŹ wartość FRA w środku iframe
         elem = driver.find_element(By.CSS_SELECTOR, '.dce-rate-value')
         value = elem.text.strip().replace(',', '.')
         fra_data[label] = value
 
+        # Wróć do głównego widoku (na wszelki wypadek)
         driver.switch_to.default_content()
 
     data = {
