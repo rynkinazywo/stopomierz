@@ -2,7 +2,7 @@ name: Update FRA daily
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # codziennie o 6:00 rano (UTC)
+    - cron: '0 6 * * *'  # codziennie o 6:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
 
       - name: Upload screenshots (debug)
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2   # ← ZAMIANA TUTAJ!
         with:
           name: fra-debug-screens
           path: debug_*.png
