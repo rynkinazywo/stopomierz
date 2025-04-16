@@ -23,21 +23,27 @@ driver = webdriver.Chrome(options=options)
 fra_data = {}
 
 try:
-    for label, url in fra_urls.items():
-        driver.get(url)
-        time.sleep(5)
+    from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-        # ZNAJDŹ i przełącz się do iframe
-        iframe = driver.find_element(By.CSS_SELECTOR, 'iframe')
-        driver.switch_to.frame(iframe)
+for label, url in fra_urls.items():
+    driver.get(url)
 
-        # ZNAJDŹ wartość FRA w środku iframe
-        elem = driver.find_element(By.CSS_SELECTOR, '.dce-rate-value')
-        value = elem.text.strip().replace(',', '.')
-        fra_data[label] = value
+    # Czekaj aż iframe będzie dostępny i przełącz się do niego
+    WebDriverWait(driver, 15).until(
+        EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe"))
+    )
 
-        # Wróć do głównego widoku (na wszelki wypadek)
-        driver.switch_to.default_content()
+    # Czekaj aż pojawi się element z wartością FRA
+    WebDriverWait(driver, 15).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, ".dce-rate-value"))
+    )
+
+    elem = driver.find_element(By.CSS_SELECTOR, '.dce-rate-value')
+    value = elem.text.strip().replace(',', '.')
+    fra_data[label] = value
+
+    driver.switch_to.default_content()
 
     data = {
         "data": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
