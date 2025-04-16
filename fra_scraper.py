@@ -1,9 +1,10 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import json
 from datetime import datetime
-import time
 
 fra_urls = {
   "1x4": "https://www.patria.cz/kurzy/PLN/1x4/fra/graf.html",
@@ -16,35 +17,33 @@ options = Options()
 options.add_argument('--headless')
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
-options.binary_location = '/usr/bin/chromium-browser'  # ← to dodajemy
+options.binary_location = '/usr/bin/chromium-browser'
 
 driver = webdriver.Chrome(options=options)
 
 fra_data = {}
 
 try:
-    from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+    for label, url in fra_urls.items():
+        driver.get(url)
 
-for label, url in fra_urls.items():
-    driver.get(url)
+        # Czekaj aż iframe będzie dostępny i przełącz się do niego
+        WebDriverWait(driver, 15).until(
+            EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe"))
+        )
 
-    # Czekaj aż iframe będzie dostępny i przełącz się do niego
-    WebDriverWait(driver, 15).until(
-        EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, "iframe"))
-    )
+        # Czekaj aż pojawi się element z wartością FRA
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".dce-rate-value"))
+        )
 
-    # Czekaj aż pojawi się element z wartością FRA
-    WebDriverWait(driver, 15).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, ".dce-rate-value"))
-    )
+        elem = driver.find_element(By.CSS_SELECTOR, '.dce-rate-value')
+        value = elem.text.strip().replace(',', '.')
+        fra_data[label] = value
 
-    elem = driver.find_element(By.CSS_SELECTOR, '.dce-rate-value')
-    value = elem.text.strip().replace(',', '.')
-    fra_data[label] = value
+        driver.switch_to.default_content()
 
-    driver.switch_to.default_content()
-
+    # Zapisz dane do fra.json
     data = {
         "data": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         "fra": fra_data
